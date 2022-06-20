@@ -13,7 +13,7 @@ class Window()
     val width = 1920
     val height = 1080
     val title = "mario"
-    var glfwWindow: Long = 0; // Window Address
+    var glfwWindow: Long = 0 // Window Address
 
     companion object
     {
@@ -77,6 +77,9 @@ class Window()
         // Setup Keyboard Listener
         GLFW.glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback)
 
+        // Setup Gamepad Listener
+        GLFW.glfwSetJoystickCallback(GamepadListener::gamepadCallback)
+
         // Make openGl context current
         GLFW.glfwMakeContextCurrent(glfwWindow)
 
@@ -91,7 +94,7 @@ class Window()
         // LWJGL detects the context that is current in the current thread,
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
-        GL.createCapabilities();
+        GL.createCapabilities()
     }
 
     private fun loop()
@@ -105,8 +108,10 @@ class Window()
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
             glClear(GL_COLOR_BUFFER_BIT)
 
-            // Test Keyboard Listener
-            if (KeyListener.isKeyPressed(GLFW.GLFW_KEY_SPACE)) println("SPAAAAAACE!!")
+            // Test Gamepad Listener
+            val xAxis = GamepadListener.getAxis(GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_GAMEPAD_AXIS_LEFT_X)
+            val yAxis = GamepadListener.getAxis(GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y)
+            println("Gamepad 1, X: $xAxis, Y: $yAxis")
 
             GLFW.glfwSwapBuffers(glfwWindow)
         }
