@@ -2,7 +2,7 @@ package Jade
 
 import org.lwjgl.glfw.GLFW
 
-class MouseListener
+object MouseListener
 {
     private var scrollX: Double = 0.0
     private var scrollY: Double = 0.0
@@ -15,106 +15,91 @@ class MouseListener
     private val mouseButtonPressed = BooleanArray(GLFW.GLFW_MOUSE_BUTTON_LAST + 1)
     private var isDragging = false
 
-    companion object
+    fun cursorPositionCallback(window: Long, xPos: Double, yPos: Double)
     {
-        private var mouseListener: MouseListener? = null
+        lastX = this.xPos
+        lastY = this.yPos
+        this.xPos = xPos
+        this.yPos = yPos
 
-        fun get(): MouseListener
+        // Check for Dragging
+        for (isPressed in mouseButtonPressed)
         {
-            if (mouseListener == null)
+            if (isPressed)
             {
-                mouseListener = MouseListener()
-            }
-
-            return mouseListener as MouseListener
-        }
-
-        fun cursorPositionCallback(window: Long, xPos: Double, yPos: Double)
-        {
-            get().lastX = get().xPos
-            get().lastY = get().yPos
-            get().xPos = xPos
-            get().yPos = yPos
-
-            // Check for Dragging
-            for (isPressed in get().mouseButtonPressed)
-            {
-                if (isPressed)
-                {
-                    get().isDragging = true
-                    break
-                }
+                isDragging = true
+                break
             }
         }
+    }
 
-        fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int)
+    fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int)
+    {
+        if (button >= mouseButtonPressed.size || button < 0) return
+
+        if (action == GLFW.GLFW_PRESS)
         {
-            if (button >= get().mouseButtonPressed.size || button < 0) return
-
-            if (action == GLFW.GLFW_PRESS)
-            {
-                get().mouseButtonPressed[button] = true
-            }
-            else if (action == GLFW.GLFW_RELEASE)
-            {
-                get().mouseButtonPressed[button] = false
-                get().isDragging = false
-            }
+            mouseButtonPressed[button] = true
         }
-
-        fun scrollCallback(window: Long, xOffset: Double, yOffset: Double)
+        else if (action == GLFW.GLFW_RELEASE)
         {
-            get().scrollX = xOffset
-            get().scrollY = yOffset
+            mouseButtonPressed[button] = false
+            isDragging = false
         }
+    }
 
-        fun endFrame()
-        {
-            get().scrollX = 0.0
-            get().scrollY = 0.0
-            get().lastX = get().xPos
-            get().lastY = get().yPos
-        }
+    fun scrollCallback(window: Long, xOffset: Double, yOffset: Double)
+    {
+        scrollX = xOffset
+        scrollY = yOffset
+    }
 
-        fun getX() : Float
-        {
-            return get().xPos as Float
-        }
+    fun endFrame()
+    {
+        scrollX = 0.0
+        scrollY = 0.0
+        lastX = xPos
+        lastY = yPos
+    }
 
-        fun getY() : Float
-        {
-            return get().yPos as Float
-        }
+    fun getX() : Float
+    {
+        return xPos as Float
+    }
 
-        fun getDx() : Float
-        {
-            return (get().xPos - get().lastX) as Float
-        }
+    fun getY() : Float
+    {
+        return yPos as Float
+    }
 
-        fun getDy() : Float
-        {
-            return (get().yPos - get().lastY) as Float
-        }
+    fun getDx() : Float
+    {
+        return (xPos - lastX) as Float
+    }
 
-        fun getScrollX() : Float
-        {
-            return get().scrollX as Float
-        }
+    fun getDy() : Float
+    {
+        return (yPos - lastY) as Float
+    }
 
-        fun getScrollY() : Float
-        {
-            return get().scrollY as Float
-        }
+    fun getScrollX() : Float
+    {
+        return scrollX as Float
+    }
 
-        fun isDragging() : Boolean
-        {
-            return get().isDragging
-        }
+    fun getScrollY() : Float
+    {
+        return scrollY as Float
+    }
 
-        fun mouseButtonDown(button: Int) : Boolean
-        {
-            if (button >= get().mouseButtonPressed.size || button < 0) return false
-            return get().mouseButtonPressed[button]
-        }
+    fun isDragging() : Boolean
+    {
+        return isDragging
+    }
+
+    fun mouseButtonDown(button: Int) : Boolean
+    {
+        if (button >= mouseButtonPressed.size || button < 0) return false
+        return mouseButtonPressed[button]
     }
 }

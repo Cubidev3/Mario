@@ -2,42 +2,27 @@ package Jade
 
 import org.lwjgl.glfw.GLFW
 
-class KeyListener
+object KeyListener
 {
     private val keyPressed = BooleanArray(GLFW.GLFW_KEY_LAST + 1)
 
-    companion object
+    fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int)
     {
-        private var keyListener: KeyListener? = null
+        if (key >= keyPressed.size || key < 0) return
 
-        fun get() : KeyListener
+        if (action == GLFW.GLFW_PRESS)
         {
-            if (keyListener == null)
-            {
-                keyListener = KeyListener()
-            }
-
-            return keyListener as KeyListener
+            keyPressed[key] = true
         }
-
-        fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int)
+        else if (action == GLFW.GLFW_RELEASE)
         {
-            if (key >= get().keyPressed.size || key < 0) return
-
-            if (action == GLFW.GLFW_PRESS)
-            {
-                get().keyPressed[key] = true
-            }
-            else if (action == GLFW.GLFW_RELEASE)
-            {
-                get().keyPressed[key] = false
-            }
+            keyPressed[key] = false
         }
+    }
 
-        fun isKeyPressed(key: Int) : Boolean
-        {
-            if (key >= get().keyPressed.size || key < 0) return false
-            return get().keyPressed[key]
-        }
+    fun isKeyPressed(key: Int) : Boolean
+    {
+        if (key >= keyPressed.size || key < 0) return false
+        return keyPressed[key]
     }
 }

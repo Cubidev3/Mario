@@ -1,5 +1,6 @@
 package Jade
 
+import Util.Time
 import org.lwjgl.Version
 import org.lwjgl.glfw.Callbacks.glfwFreeCallbacks
 import org.lwjgl.glfw.GLFW
@@ -8,26 +9,18 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11.*
 import org.lwjgl.system.MemoryUtil.NULL
 
-class Window()
+object Window
 {
-    val width = 1920
-    val height = 1080
-    val title = "mario"
+    private const val width = 1920
+    private const val height = 1080
+    private const val title = "mario"
     var glfwWindow: Long = 0 // Window Address
 
-    companion object
-    {
-        private var window: Window? = null
-
-        fun get() : Window
-        {
-            if (window == null){
-                window = Window()
-            }
-
-            return window as Window
-        }
-    }
+    var r = 1f
+    var g = 1f
+    var b = 1f
+    var a = 1f
+    var fadeToBlack = false
 
     fun run()
     {
@@ -79,6 +72,7 @@ class Window()
 
         // Setup Gamepad Listener
         GLFW.glfwSetJoystickCallback(GamepadListener::gamepadCallback)
+        GamepadListener.init()
 
         // Make openGl context current
         GLFW.glfwMakeContextCurrent(glfwWindow)
@@ -99,21 +93,44 @@ class Window()
 
     private fun loop()
     {
+        // Calculate delta time
+        var startTime = Time.getTime()
+        var endTime = Time.getTime()
+
         while (!GLFW.glfwWindowShouldClose(glfwWindow))
         {
             // Pool events
             GLFW.glfwPollEvents()
 
             // Set window color
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f)
+            glClearColor(r, g, b, a)
             glClear(GL_COLOR_BUFFER_BIT)
 
-            // Test Gamepad Listener
-            val xAxis = GamepadListener.getAxis(GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_GAMEPAD_AXIS_LEFT_X)
-            val yAxis = GamepadListener.getAxis(GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y)
-            println("Gamepad 1, X: $xAxis, Y: $yAxis")
+            // Test Keyboard
+            if (fadeToBlack)
+            {
+                r = (r - 0.01f).coerceAtLeast(0f)
+                g = (g - 0.01f).coerceAtLeast(0f)
+                b = (b - 0.01f).coerceAtLeast(0f)
+            }
+            else
+            {
+                r = (r + 0.01f).coerceAtMost(1f)
+                g = (g + 0.01f).coerceAtMost(1f)
+                b = (b + 0.01f).coerceAtMost(1f)
+            }
+
+            fadeToBlack = GamepadListener.isPressed(GLFW.GLFW_JOYSTICK_1, GLFW.GLFW_GAMEPAD_BUTTON_B)
 
             GLFW.glfwSwapBuffers(glfwWindow)
+
+            // Calculates delta time
+            endTime = Time.getTime()
+            val dt = (endTime - startTime) * 1E-9
+            val fps = 1/dt
+            println("delta time: ${dt}s")
+            println("fps: ${fps}FPS")
+            startTime = endTime
         }
     }
 }
